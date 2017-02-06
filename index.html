@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Welcome to Vue</title>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="vue-material/dist/vue-material.css">
+  <script src="vue-material/dist/vue-material.js"></script>
+  <style>
+  .img {
+    position: relative;
+    float: left;
+    width:  200px;
+    height: 200px;
+    background-position: 50% 50%;
+    background-repeat:   no-repeat;
+    background-size:     cover;
+  }
+
+  .floated_img {
+    margin: 2%;
+    float: left;
+  }
+  </style>
+</head>
+<body>
+  <div id="app">
+
+    <md-dialog-confirm
+    :md-title="confirm.title"
+    :md-ok-text="confirm.ok"
+    :md-cancel-text="confirm.cancel"
+    :md-content-html="confirm.image"
+    @open="onOpen"
+    @close="onClose"
+    ref="dialog5">
+    </md-dialog-confirm>
+
+
+    <div class="floated_img"  v-for="item in items" @click="openDialog('dialog5', item)">
+      <md-card md-with-hover>
+        <md-card-header>
+          <div class="img" :style="'background-image:url(\'' + item.src + '\');'" ></div>
+        </md-card-header>
+      </md-card>
+    </div>
+
+
+  </div>
+  <script>
+  Vue.use(VueMaterial)
+
+
+  new Vue({
+    el: '#app',
+    data: {
+      items: [
+        { src: "images/girl.jpg" },
+        { src: "images/mdl.jpg"},
+        { src: "images/walk.jpg" },
+        { src: "images/squirrel.jpg" },
+        { src: "images/big.jpg" },
+        { src: "images/duck.jpg"},
+        { src: "images/bird.jpg" },
+        { src: "images/statue.jpg" }
+      ],
+      confirm: {
+        title: 'Do you really want to print this picture ?',
+        image: '"<p>lul</p>"',
+        ok: 'YES',
+        cancel: 'NO'
+      }
+    },
+    methods: {
+      openDialog(ref, item) {
+        this.confirm.image = '<img src=' + item.src + '></img>'
+        this.$refs[ref].open();
+      },
+      closeDialog(ref) {
+        this.$refs[ref].close();
+      },
+      onOpen() {
+        console.log('Opened');
+      },
+      onClose(type) {
+        console.log('Closed', type);
+      }
+    }
+  })
+  </script>
+</body>
+</html>

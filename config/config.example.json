@@ -1,0 +1,6 @@
+{
+  "mediaFolder": "/tmp/data",
+  "printer": "EPSON_TM-T20",
+  "format": "Custom.75x330mm",
+  "port": 8085
+}

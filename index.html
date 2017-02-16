@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Welcome to Vue</title>
+  <title>Fast Print UI</title>
+
   <script src="https://unpkg.com/vue/dist/vue.js"></script>
+
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet" href="vue-material/dist/vue-material.css">
-  <script src="vue-material/dist/vue-material.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vue-material/0.7.1/vue-material.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-material/0.7.1/vue-material.js"></script>
+
+  <script src="/socket.io/socket.io.js"></script>
+
   <style>
+
   .img {
     position: relative;
     float: left;
     width:  200px;
     height: 200px;
-    background-position: 50% 50%;
+    background-position: 50% 0%;
     background-repeat:   no-repeat;
     background-size:     cover;
   }
@@ -22,6 +29,7 @@
     margin: 2%;
     float: left;
   }
+
   </style>
 </head>
 <body>
@@ -31,12 +39,11 @@
     :md-title="confirm.title"
     :md-ok-text="confirm.ok"
     :md-cancel-text="confirm.cancel"
-    :md-content-html="confirm.image"
+    :md-content-html="'<img src=' + confirm.image + '></img>'"
     @open="onOpen"
     @close="onClose"
     ref="dialog5">
     </md-dialog-confirm>
-
 
     <div class="floated_img"  v-for="item in items" @click="openDialog('dialog5', item)">
       <md-card md-with-hover>
@@ -46,48 +53,55 @@
       </md-card>
     </div>
 
-
   </div>
   <script>
+
   Vue.use(VueMaterial)
 
-
-  new Vue({
+  var app = new Vue({
     el: '#app',
     data: {
-      items: [
-        { src: "images/girl.jpg" },
-        { src: "images/mdl.jpg"},
-        { src: "images/walk.jpg" },
-        { src: "images/squirrel.jpg" },
-        { src: "images/big.jpg" },
-        { src: "images/duck.jpg"},
-        { src: "images/bird.jpg" },
-        { src: "images/statue.jpg" }
-      ],
+      items: [],
       confirm: {
-        title: 'Do you really want to print this picture ?',
-        image: '"<p>lul</p>"',
-        ok: 'YES',
-        cancel: 'NO'
+        title: 'Voulez-vous vraiment imprimer cette image ?',
+        image: '',
+        ok: 'OUI',
+        cancel: 'NON'
       }
     },
     methods: {
       openDialog(ref, item) {
-        this.confirm.image = '<img src=' + item.src + '></img>'
+        this.confirm.image = item.src
         this.$refs[ref].open();
       },
       closeDialog(ref) {
         this.$refs[ref].close();
       },
       onOpen() {
-        console.log('Opened');
       },
       onClose(type) {
-        console.log('Closed', type);
+        if (type === "ok") { socket.emit('print', {media: this.confirm.image}) }
       }
     }
   })
+
+  var socket = io()
+
+  socket.on('addItem', function(filepath) {
+    app.items.push({src: 'media/' + filepath})
+    console.log('File', filepath, 'has been added')
+  })
+
+  socket.on('deleteItem', function(filepath) {
+    app.items.forEach((item, index) => {
+      if (item.src === 'media/' + filepath) {
+        app.items.splice(index, 1)
+        console.log('File', filepath, 'has been deleted')
+        return
+      }
+    })
+  })
+
   </script>
 </body>
 </html>

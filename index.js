@@ -15,26 +15,25 @@ app.get('/', function(req, res){
   res.sendFile(path.join(__dirname, 'index.html'))
 })
 
+http.listen(config.port, function() {
+  console.log('Fast Print UI: Listening on port', config.port)
+})
+
 io.on('connection', function(socket){
-  socket.on('disconnect', function() {
-    console.log('user disconnected')
-  })
+
+  var watcher = chokidar.watch(config.mediaFolder)
+  watcher
+  .on('add', filepath => socket.emit('addItem', path.basename(filepath)))
+  .on('unlink', filepath => socket.emit('deleteItem', path.basename(filepath)))
 
   socket.on('print', function(data) {
+    var file = path.join(config.mediaFolder, path.basename(data.media))
     execa('lp', [ '-d', config.printer,
     '-o', 'media=' + config.format,
-    '-n', '1', data])
+    '-n', '1', file])
     .then(res => {
       console.log('Printing', data.media, 'with', config.printer)
       console.log(res.stdout)
     }).catch(error => console.log(error.stderr))
   })
-})
-
-http.listen(config.port, function() {
-  console.log('Fast Print UI: Listening on port', config.port)
-  var watcher = chokidar.watch(config.mediaFolder)
-  watcher
-  .on('add', filepath => socket.emit('addItem', path.basename(filepath)))
-  .on('unlink', filepath => socket.emit('deleteItem', path.basename(filepath)))
 })

@@ -5,6 +5,8 @@
 
   <script src="https://unpkg.com/vue/dist/vue.js"></script>
 
+  <script src="https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"></script>
+
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
@@ -88,8 +90,10 @@
   var socket = io()
 
   socket.on('addItem', function(filepath) {
-    app.items.push({src: 'media/' + filepath})
-    console.log('File', filepath, 'has been added')
+    if (_.find(app.items, {src: 'media/' + filepath}) === undefined) {
+      app.items.push({src: 'media/' + filepath})
+      console.log('File', filepath, 'has been added')
+    }
   })
 
   socket.on('deleteItem', function(filepath) {

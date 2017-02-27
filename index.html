@@ -13,7 +13,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vue-material/0.7.1/vue-material.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-material/0.7.1/vue-material.js"></script>
 
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+  <script src="https://wzrd.in/standalone/socketio-wildcard@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-signals/1.0.0/js-signals.min.js"></script>
+
+  <script src="spacebro-client/dist/spacebro-client.js"></script>
 
   <style>
 
@@ -82,21 +86,30 @@
       onOpen() {
       },
       onClose(type) {
-        if (type === "ok") { socket.emit('print', {media: this.confirm.image}) }
+        if (type === "ok") { spacebroClient.emit('print', {media: this.confirm.image}) }
       }
     }
   })
 
-  var socket = io()
+  var spacebroClient = window.spacebroClient
+  spacebroClient.connect('127.0.0.1', 8888, {
+    clientName: 'fast-print-ui-front',
+    channelName: 'fast-print',
+    verbose: false
+  })
 
-  socket.on('addItem', function(filepath) {
+  spacebroClient.on('connect', function() {
+    spacebroClient.emit('ready')
+  })
+
+  spacebroClient.on('add-item', function(filepath) {
     if (_.find(app.items, {src: 'media/' + filepath}) === undefined) {
       app.items.push({src: 'media/' + filepath})
       console.log('File', filepath, 'has been added')
     }
   })
 
-  socket.on('deleteItem', function(filepath) {
+    spacebroClient.on('delete-item', function(filepath) {
     app.items.forEach((item, index) => {
       if (item.src === 'media/' + filepath) {
         app.items.splice(index, 1)
